@@ -4,8 +4,7 @@ import gi
 
 gi.require_version("Gtk", "4.0")
 
-from gi.repository import Gtk, Gio, GObject
-
+from gi.repository import Gtk
 from dialog import ExampleDialog
 
 
