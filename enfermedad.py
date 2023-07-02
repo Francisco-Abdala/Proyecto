@@ -10,6 +10,8 @@ class Enfermedad():
 
         #Referencia a qué tan mortal es la enfermedad
         self.__muerte = parametro3
+
+        
 #Métodos get para obtener el parametro que se necesite
     def get_infeccion_probable(self):
         return self.__infeccion_probable
