@@ -79,3 +79,4 @@ class Persona():
     #Método que indica cuantos días enfermo le queda a la persona, o en su caso, cuantos días de inmunidad tiene
     def restar_contador(self):
         self.__contador = self.__contador -1
+        
