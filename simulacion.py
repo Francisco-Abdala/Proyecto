@@ -5,13 +5,26 @@ from persona import Persona
 
 class Simulacion():
     def __init__(self, parametro1,parametro2,parametro3):
+        #La comunidad que tendrá la enfermedad
         self.__comunidad = parametro1
+
+        #La enfermedad como tal
         self.__enfermedad = parametro2
+
+        #Días
         self.__pasos = parametro3
+
+        #contador
         self.__cuenta = 0
-        self.__infectados = [self.__comunidad.get_infectados()]
+
+        #Infectados por día
+        self.__infectados = [self.__comunidad.get_num_infectados()]
+
+        #Fallecidos por día
         self.__fallecidos = [0]
-        self.__susceptible = [self.__comunidad.get_num_ciudadanos() - self.__comunidad.get_infectados()]
+
+        #Susceptibles por día
+        self.__susceptible = [self.__comunidad.get_num_ciudadanos() - self.__comunidad.get_num_infectados()]
         
 
     def get_pasos(self):
@@ -28,42 +41,42 @@ class Simulacion():
     def comienzo(self):
         for i in range(self.__pasos):
             if self.__cuenta == 0:
-                self.__caso_cero()
+                self.caso_cero()
             else:
                 self.pasar_el_dia()
             self.__cuenta += 1
             self.datos()
 
 
-    def generar_caso_0(self):
-        caso_0 = self.__comunidad.get_infectados()
+    def caso_cero(self):
+        caso_0 = self.__comunidad.get_num_infectado()
         poblacion = self.__comunidad.get_num_ciudadanos()
-        ciudadanos = self.__comunidad.get_ciudadanos()
-        for x in range(caso_0):
+        personas = self.__comunidad.get_habitantes()
+        for _ in range(caso_0):
             while True:
                 ayuda = random.randint(0, poblacion)
-                if ciudadanos[ayuda].get_estado() == "S":
-                    ciudadanos[ayuda].set_estado("E")
-                    ciudadanos[ayuda].set_contador(self.__enfermedad.establecer_contador())
+                if personas[ayuda].get_estado() == "S":
+                    personas[ayuda].set_estado("E")
+                    personas[ayuda].set_contador(self.__enfermedad.set_contador())
                     break
                 else:
                     ayuda = None
 
-        self.__comunidad.set_ciudadanos(ciudadanos)
+        self.__comunidad.set_habitantes(personas)
 
     def datos(self):
-        dia = self.__contador
-        contagiados = self.__comunidad.get_infectados()
-        enfermos = self.__comunidad.get_enfermos()
-        muertos = self.__comunidad.get_muertos()
-        print(f"Día: {dia}, contagiados totales: {contagiados}, enfermos: {enfermos}, muertos {muertos}\n")
+        dia = self.__cuenta
+        contagio = self.__comunidad.get_num_infectados()
+        infectados = self.__comunidad.get_num_infectados()
+        fallecidos = self.__comunidad.get_fallecidos()
+        print(f"Día: {dia}, contagiados totales: {contagio}, enfermos: {infectados}, muertos {fallecidos}\n")
 
     def leer_datos(self):
         fallecidos = 0
         infectados = 0
         recuperados = 0
-        suceptibles = 0
-        for ciudadano in self.__comunidad.get_ciudadanos():
+        susceptibles = 0
+        for ciudadano in self.__comunidad.get_habitantes():
             if ciudadano.get_estado() == "F":
                 fallecidos +=1
             elif ciudadano.get_estado() == "I":
@@ -71,19 +84,21 @@ class Simulacion():
             elif ciudadano.get_estado() == "R":
                 recuperados += 1
             elif ciudadano.get_estado() == "S":
-                suceptibles +=1
-        self.__comunidad.set_muertos(fallecidos)
+                susceptibles +=1
+
+
+        self.__comunidad.set_fallecidos(fallecidos)
         self.__fallecidos.append(fallecidos)
-        self.__comunidad.set_enfermos(infectados)
-        self.__enfermos_array.append(infectados)
-        self.__comunidad.set_infectados(fallecidos+infectados+recuperados)
+        self.__comunidad.set_num:infectados(infectados)
+        self.__infectados.append(infectados)
+        self.__comunidad.set_num_infectados(fallecidos+infectados+recuperados)
         self.__infectados.append(fallecidos+infectados+recuperados)
-        self.__suceptibles_array.append(suceptibles)
+        self.__susceptible.append(susceptibles)
 
 
     def contagiar(self):
         enfermos = []
-        for ciudadano in self.__comunidad.get_ciudadanos():
+        for ciudadano in self.__comunidad.get_habitantes():
             if ciudadano.get_estado() == "I":
                 conexion = self.__comunidad.cantidad_conecciones()
                 for _ in range(conexion): 
@@ -94,9 +109,11 @@ class Simulacion():
         for i in range(len(enfermos)):
             enfermos[i].set_estado("I")
 
-    def siguen_enfermos(self):
 
-        for ciudadano in self.__comunidad.get_ciudadanos():
+
+
+    def siguen_enfermos(self):
+        for ciudadano in self.__comunidad.get_habitantes():
             if ciudadano.get_estado() == "I":
                 ciudadano.restar_contador()
                 if ciudadano.get_contador() == 0:
@@ -113,7 +130,7 @@ class Simulacion():
         plt.plot(x,self.__enfermos_array)
         plt.plot(x,self.__infectados_array)
         plt.plot(x,self.__muertos_array)
-        plt.plot(x,self.__suceptibles_array)
+        plt.plot(x,self.__susceptibles)
         plt.grid()    # rejilla
         plt.xlabel('Días')
         plt.ylabel('Población')
@@ -122,3 +139,8 @@ class Simulacion():
             plt.title(f"Gráfico Modelo SIR Final de la sumlación ({self.__dias} días)")
         else:
             plt.title(f"Gráfico Modelo SIR día {self.__contador}")
+
+    def pasar_el_dia(self):
+        self.siguen_enfermos()
+        self.contagiar()
+        self.leer_datos()
