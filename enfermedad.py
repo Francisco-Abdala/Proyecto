@@ -1,7 +1,7 @@
 import random
 
 class Enfermedad():
-    def __init__(self,parametro,parametro2,parametro3):
+    def __init__(self,parametro,parametro2,parametro3,parametro4):
         #Referencia a la probabilidad de infección de una persona
         self.__infeccion_probable = parametro
         
@@ -10,6 +10,8 @@ class Enfermedad():
 
         #Referencia a qué tan mortal es la enfermedad
         self.__muerte = parametro3
+
+        self.__infeccion_estrecho = parametro4
 
         
 #Métodos get para obtener el parametro que se necesite
@@ -21,9 +23,14 @@ class Enfermedad():
 
     def get_muerte(self):
         return self.__muerte
+    def get_estrecho(self):
+        return self.__infeccion_estrecho
 
-
-
+    def is_contacto_estrecho_contagiado(self):
+        a = random.randint(0, 100)
+        if a <= self.__infeccion_estrecho:
+            return True
+        return False
 #Entrega la cantidad de días que debería tener una persona cuando se enferma,devuelve la cantidad de días que tiene la persona  
     def set_contador(self):
         while True:
@@ -40,16 +47,21 @@ class Enfermedad():
             referencia = random.randint(0,100)
             if referencia <= self.__muerte:
                 return True
-            else:
-                return False
+            return False
 
 
 
 #Determina si alguien se contagió
     def contagio(self):
+        print("i")
         while True:
             referencia = random.randint(0,100)
             if referencia <= self.__infeccion_probable:
                 return True
-            else:
-                return False
+            return False
+        
+    def contacto_estrecho_contagiado(self):
+        a = random.randint(0, 100)
+        if a <= self.__infeccion_estrecho:
+            return True
+        return False
