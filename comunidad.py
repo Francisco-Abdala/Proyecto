@@ -1,121 +1,121 @@
-from persona import Persona
-import json
-import random
+#Importa lo que se usará en el código
+import sys
+import gi
+import matplotlib
 
-class Comunidad():
-    def __init__(self,parametro1,parametro2,parametro3,parametro4,parametro5):
-        #Cantidad de ciudadanos
-        self.__num_ciudadanos = parametro1
+gi.require_version('Gtk', '4.0')
 
-        #Lista de objetos persona
-        self.__habitantes = []
-
-        #Media de conexiones fisicas
-        self.__promedio_conexion_fisica = parametro4
-
-        #La clase enfermedad
-        self.__enfermedad = parametro2
-
-        #Número de infectados
-        self.__num_infectados = parametro3
-
-        #Probabilidad de interacción de una persona con otra
-        self.__probabilidad_conexion_fisica = parametro5
-
-        self.__fallecidos = 0
-        self.crear_gente()
-
-#Métodos get para ingresar a los datos    
-    def get_num_ciudadanos(self):
-        return self.__num_ciudadanos
-    
-    def get_promedio_conexion_fisica(self):
-        return self.__promedio_conexion_fisica
-    
-
-    def get_enfermedad(self):
-        return self.__enfermedad
-    
-
-    def get_num_infectados(self):
-        return self.__num_infectados
-    
-
-    def get_probabilidad_conexion_fisica(self):
-        return self.__probabilidad_conexion_fisica
-    
-    def get_num_infectado(self):
-        return self.__num_infectados
-    
-    def get_habitantes(self):
-        return self.__habitantes
-    
-    def get_fallecidos(self):
-        return self.__fallecidos
-
-#Crea la gente que estará en la comunidad
-    def crear_gente(self):
-        with open("texto.json") as archivo:
-            #Clase persona
-            individuo = Persona()
-
-            #Información del archivo json
-            datos = json.load(archivo)
-
-            #Crea la lista de nombres 
-            nombres = datos["nombres"]
-
-            #Crea la lista de apellidos
-            apellidos = datos["apellidos"]
-            
-            contador = 0
-
-            for i in range(self.__num_ciudadanos):
-                ayuda = list(set([apellidos[random.randint(0, 153)]]))
-                for k in range(10):
-                    contador +=10
-                    for j in range(10):
-                        contador += 1
-                        individuo.set_id(contador)
-                        individuo.set_nombre(nombres[random.randint(0, 153)])
-                        individuo.set_estado("S")
-                        self.set_habitantes(individuo)
-
-    def conexiones(self):
-        while True:
-            conexion = random.gauss(self.__prom_coneccion_fisica, self.__prom_coneccion_fisica/4)
-            if conexion >= 0 and conexion < self.__prom_coneccion_fisica*3:
-                break
-        return int(conexion)
-
-    def contagiar_random(self):
-        while True:
-            ayuda = random.randint(0, self.__num_ciudadanos - 1)
-            ciudadano = self.__ciudadanos[ayuda]
-            if ciudadano.get_estado() == "S":
-                ciudadano.set_contador(self.__enfermedad.set_contador())
-                return ciudadano
-            elif ciudadano.get_estado() in ["E", "I"]:
-                return None
+from gi.repository import Gio, Gtk
+from time import sleep
+from simulacion import Simulacion
+from enfermedad import Enfermedad
+from comunidad import Comunidad
 
 
+class MainWindow(Gtk.ApplicationWindow):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        #Determina el tamaño y titulo de la ventana creada
+        self.set_default_size(800,250)
+        self.set_title("Simulación")
+
+        #Crea un header bar
+        barra = Gtk.HeaderBar.new()
+        self.set_titlebar(titlebar=barra)
+        self.set_title("Simulación")
 
 
+        #Crea el botón para el about que se encuentra en el header bar
+        menu_button_model = Gio.Menu()
+        menu_button_model.append("About" , 'app.about')
+        boton_menu = Gtk.MenuButton.new()
+        boton_menu.set_icon_name(icon_name='open-menu-symbolic')
+        boton_menu.set_menu_model(menu_model=menu_button_model)
+        barra.pack_end(child=boton_menu)
 
-#Métodos set para crear los datos necesarios
-    def set_habitantes(self, parametro):
-        if isinstance(parametro, Persona):
-            self.__habitantes.append(parametro)   
-        else:
-           print("olololo")
+        #Creación de una caja
+        self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,spacing= 10)
+        self.set_child(self.box)    
+
+        #Creación de un grid
+        self.grid1 = Gtk.GridView()
+        self.box.append(self.grid1)
+
+        #Creación del botón que se utilizará para el comienzo de la simulación
+        self.button = Gtk.Button(label="Empezar simulación")
+        self.button.connect("clicked", self.on_start_button_clicked)                          
+        self.box.append(self.button)
+
+    #Acción del botón
+    def on_start_button_clicked(self, button):
+        self.iniciar_simulacion()
+
+    #Función que esta sujeta al botón de comienzo
+    def iniciar_simulacion(self):
+        #Se les pasa los parámetros para la clase Enfermedad
+        infeccion_probable = 5
+        promedio_pasos = 10
+        muerte = 2
+        estrecho = 2
+        virus = Enfermedad(infeccion_probable,
+                                promedio_pasos, muerte,estrecho)
+        #Se les pasa los parámetros para la clase Comunidad
+        poblacion = 100
+        infectados = 1
+        media_conexion_fisica = 7
+        probabilidad_conexion_fisica = 40
+        ciudad = Comunidad(poblacion, virus, infectados,
+                            media_conexion_fisica, probabilidad_conexion_fisica)
         
-    def set_promedio_conexion_fisica(self,parametro):
-        if isinstance(parametro, int):
-            self.__promedio_conexion_fisica = parametro
-        else:
-            raise TypeError("El promedio de conexion fisica debe ser un numero entero")
-        
-    def set_fallecidos(self,parametro):
-        self.__fallecidos = parametro
-    def set_num_infectados(self,parametro):
-        self.__num_infectados = parametro
+        #Se les pasa los parámetros para la clase Simulación
+        dias = 40
+        simulacion = Simulacion(ciudad, virus,dias)
+        simulacion.comienzo()
+        simulacion.mostrar_grafico()
+
+
+#Clase aplicación
+class App(Gtk.Application):
+
+    def __init__(self):
+        super().__init__(application_id='cl.com.Example',
+                         flags=Gio.ApplicationFlags.FLAGS_NONE)
+
+        self.create_action('quit', self.exit_app, ['<primary>q'])
+        self.create_action('about', self.on_about_action)
+
+
+    def do_activate(self):
+        win = self.props.active_window
+        if not win:
+            win = MainWindow(application=self)
+        win.present()
+
+    def do_startup(self):
+        Gtk.Application.do_startup(self)
+
+    def do_shutdown(self):
+        Gtk.Application.do_shutdown(self)
+
+    def on_about_action(self, action, param):
+        self.ayuda = Gtk.AboutDialog.new()
+        self.ayuda.set_authors(["Francisco Abdala", "Amanda Pérez"])
+        self.ayuda.set_program_name("Proyecto")
+        self.ayuda.set_comments("Este es el proyecto para programación avanzada")
+        self.ayuda.set_visible(True)
+
+    def exit_app(self, action, param):
+        self.quit()
+
+    def create_action(self, name, callback, shortcuts=None):
+        action = Gio.SimpleAction.new(name, None)
+        action.connect('activate', callback)
+        self.add_action(action)
+        if shortcuts:
+            self.set_accels_for_action(f'app.{name}', shortcuts)
+
+
+#Da inicio a la ventana
+if __name__ == '__main__':
+    app = App()
+    app.run(sys.argv)
