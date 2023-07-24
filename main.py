@@ -10,7 +10,9 @@ from time import sleep
 from simulacion import Simulacion
 from enfermedad import Enfermedad
 from comunidad import Comunidad
-
+from vacuna_a import Vacuna_A
+from vacuna_b import Vacuna_B
+from vacuna_c import Vacuna_C
 
 class MainWindow(Gtk.ApplicationWindow):
     def __init__(self, *args, **kwargs):
@@ -53,26 +55,29 @@ class MainWindow(Gtk.ApplicationWindow):
     #Función que esta sujeta al botón de comienzo
     def iniciar_simulacion(self):
         #Se les pasa los parámetros para la clase Enfermedad
-        infeccion_probable = 5
+        infeccion_probable = 2
         promedio_pasos = 10
         muerte = 2
-        estrecho = 2
         virus = Enfermedad(infeccion_probable,
-                                promedio_pasos, muerte,estrecho)
+                                promedio_pasos,muerte)
         #Se les pasa los parámetros para la clase Comunidad
-        poblacion = 100
-        infectados = 1
+        poblacion = 1000
+        infectados = 7
         media_conexion_fisica = 7
         probabilidad_conexion_fisica = 40
+        ayuda = int(poblacion * 0.4)
+        vacuna1 = Vacuna_A(ayuda)
+        vacuna2 = Vacuna_B(ayuda)
+        vacuna3 = Vacuna_C(ayuda)
         ciudad = Comunidad(poblacion, virus, infectados,
                             media_conexion_fisica, probabilidad_conexion_fisica)
-        
+        ciudad.set_vacuna(vacuna1)
+        ciudad.set_vacuna(vacuna2)
+        ciudad.set_vacuna(vacuna3)
         #Se les pasa los parámetros para la clase Simulación
         dias = 40
         simulacion = Simulacion(ciudad, virus,dias)
         simulacion.comienzo()
-        simulacion.mostrar_grafico()
-
 
 #Clase aplicación
 class App(Gtk.Application):
@@ -113,7 +118,6 @@ class App(Gtk.Application):
         self.add_action(action)
         if shortcuts:
             self.set_accels_for_action(f'app.{name}', shortcuts)
-
 
 #Da inicio a la ventana
 if __name__ == '__main__':
