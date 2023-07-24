@@ -1,8 +1,5 @@
 import random
 from time import sleep
-from persona import Persona
-from enfermedad import Enfermedad
-from comunidad import Comunidad
 class Simulacion():
     def __init__(self, parametro1,parametro2,parametro3):
         #La comunidad que tendrá la enfermedad
