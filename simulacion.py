@@ -1,7 +1,4 @@
-import io
 import random
-import matplotlib.pyplot as plt
-import statsmodels.api as sm
 from time import sleep
 from persona import Persona
 from enfermedad import Enfermedad
