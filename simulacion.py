@@ -54,10 +54,10 @@ class Simulacion():
 #Inicia simulación
     def comienzo(self):
        contador = 0
-       for i in range(self.__pasos):
+       for i in range(2):
             contador += 1
             #Cantidad de personas susceptibles
-            susceptibles = self.__comunidad.get_num_ciudadanos()
+            susceptibles = self.__comunidad.get_susceptible()
 
             #Cantidad de personas infectadas
             infectados = self.__comunidad.get_num_infectados()
@@ -78,10 +78,11 @@ class Simulacion():
             muertos = self.__comunidad.get_muertos()
 
             #Formulas del modelo SIR
-            ayuda_s = susceptibles - (transmision * susceptibles * infectados)
-            ayuda_i = infectados + (transmision * susceptibles * infectados) - (recuperacion * infectados) -  (muerte * infectados)
-            ayuda_r = recuperados + (recuperacion * infectados)
-            ayuda_m = muertos + (muerte * infectados)
+            susceptible = (transmision*susceptibles) - infectados
+            infectado = infectados + (transmision * susceptibles * infectados) - (recuperacion * infectados) -  (muerte * infectados)
+            print(infectado,transmision,susceptibles,infectados,recuperacion,muerte)
+            recuperado = recuperados + (recuperacion * infectados)
+            muerto = muertos + (muerte * infectados)
 
             #Personas susceptibles
             for i in range(self.__comunidad.get_num_ciudadanos()):
@@ -102,15 +103,10 @@ class Simulacion():
             for i in range(self.__comunidad.get_num_ciudadanos()):
                 for _ in self.__comunidad.get_habitantes():
                     if self.__comunidad.get_habitantes()[i-1].get_estado() == "I" and contador >=3:
-                        ayuda = random.choice(0,1,2)
-                        a = self.__comunidad.get_vacunas()[ayuda]
-                        self.__comunidad.get_habitantes()[i-1].a.vacunado()
                         self.__comunidad.set_num_recuperados(1)
                         self.__comunidad.set_num_susceptibles(-1)
                         self.__comunidad.set_num_infectados(-1)
-                        if self.__comunidad.get_vacunas()[ayuda].get_vacunas_disponibles() == 0:
-                            self.__comunidad.get_vacunas().pop(ayuda)
-
+                        self.__comunidad.get_habitantes()(i-1).set_estado("R")
 
             #Personas muertas
             for i in range(self.__comunidad.get_num_ciudadanos()):
@@ -123,6 +119,13 @@ class Simulacion():
                 
             
 
-            print(f"Día: {contador}, poblacion: {self.__comunidad.get_num_ciudadanos()}, infectados: {self.__comunidad.get_num_infectado()}, recuperados: {self.__comunidad.get_recuperados()}, fallecidos: {self.__comunidad.get_fallecidos()}")
-
+            print(f"Día: {contador}, poblacion: {self.__comunidad.get_num_ciudadanos()}, infectados: {infectado}, recuperados: {recuperado}, fallecidos: {muerto}")
+            susceptibles = 0
+            infectados = 0
+            recuperados = 0
+            muertos = 0
+            susceptible = 0
+            infectado = 0
+            recuperado = 0
+            muerto = 0
         
