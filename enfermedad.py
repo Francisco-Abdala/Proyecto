@@ -1,7 +1,8 @@
 import random
 
 class Enfermedad():
-    def __init__(self,parametro,parametro2,parametro3,parametro4):
+    def __init__(self,parametro,parametro2,parametro3):
+
         #Referencia a la probabilidad de infección de una persona
         self.__infeccion_probable = parametro
         
@@ -11,57 +12,11 @@ class Enfermedad():
         #Referencia a qué tan mortal es la enfermedad
         self.__muerte = parametro3
 
-        self.__infeccion_estrecho = parametro4
-
         
 #Métodos get para obtener el parametro que se necesite
     def get_infeccion_probable(self):
         return self.__infeccion_probable
-
     def get_promedio_pasos(self):
         return self.__promedio_pasos
-
     def get_muerte(self):
         return self.__muerte
-    def get_estrecho(self):
-        return self.__infeccion_estrecho
-
-    def is_contacto_estrecho_contagiado(self):
-        a = random.randint(0, 100)
-        if a <= self.__infeccion_estrecho:
-            return True
-        return False
-#Entrega la cantidad de días que debería tener una persona cuando se enferma,devuelve la cantidad de días que tiene la persona  
-    def set_contador(self):
-        while True:
-            referencia = int(random.gauss(self.__promedio_pasos,self.__promedio_pasos/4))
-            if referencia > 0:
-                return referencia
-
-
-
-
-#Determina la muerte de la persona, True si muere, False si no muere
-    def muerte(self):
-        while True:
-            referencia = random.randint(0,100)
-            if referencia <= self.__muerte:
-                return True
-            return False
-
-
-
-#Determina si alguien se contagió
-    def contagio(self):
-        print("i")
-        while True:
-            referencia = random.randint(0,100)
-            if referencia <= self.__infeccion_probable:
-                return True
-            return False
-        
-    def contacto_estrecho_contagiado(self):
-        a = random.randint(0, 100)
-        if a <= self.__infeccion_estrecho:
-            return True
-        return False
