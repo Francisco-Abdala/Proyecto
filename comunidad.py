@@ -79,7 +79,10 @@ class Comunidad():
     def set_fallecidos(self,parametro): 
         self.__fallecidos += parametro
     def set_num_infectados(self,parametro):
-        self.__num_infectados = self.__num_infectados + parametro
+        if isinstance(parametro,int):
+            self.__num_infectados = self.__num_infectados + parametro
+        else:
+            raise ValueError("No es un numero")
     def set_num_recuperados(self,parametro):
         if isinstance(parametro, int):
             self.__recuperados = self.__recuperados + parametro
