@@ -1,4 +1,6 @@
 #Importa lo que se usará en el código
+
+#Francisco Abdala,Amanda Perez
 import sys
 import gi
 import matplotlib
@@ -18,7 +20,6 @@ class MainWindow(Gtk.ApplicationWindow):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         #Determina el tamaño y titulo de la ventana creada
-        self.set_default_size(800,250)
         self.set_title("Simulación")
 
         #Crea un header bar
@@ -55,7 +56,7 @@ class MainWindow(Gtk.ApplicationWindow):
     #Función que esta sujeta al botón de comienzo
     def iniciar_simulacion(self):
         #Se les pasa los parámetros para la clase Enfermedad
-        infeccion_probable = 2
+        infeccion_probable = 0.02   
         promedio_pasos = 10
         muerte = 2
         virus = Enfermedad(infeccion_probable,
