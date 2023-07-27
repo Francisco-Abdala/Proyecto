@@ -1,5 +1,9 @@
 import random
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 from time import sleep
+
 class Simulacion():
     def __init__(self, parametro1,parametro2,parametro3):
         #La comunidad que tendrá la enfermedad
@@ -11,15 +15,6 @@ class Simulacion():
         #Días
         self.__pasos = parametro3
 
-        #contador
-        self.__cuenta = 0
-        #Infectados por día
-        self.__infectados = 0
-        #Fallecidos por día
-        self.__fallecidos = 0
-
-        #Susceptibles por día
-        self.__susceptible = 0
 #Métodos get para la obtención de los datos cuando se requiera
     def get_pasos(self):
         return self.__pasos
@@ -27,13 +22,6 @@ class Simulacion():
         return self.__cuenta
     def get_enfernedad(self):
         return self.__enfermedad
-    def get_fallecidos(self):
-        return self.__fallecidos
-    def get_susceptible(self):
-        return self.__susceptible
-    def get_infectados(self):
-        return self.__infectados
-    
 #Métodos set para la creación de datos cuando se requiera
     def set_infectados(self,parametro):
         if isinstance(parametro,int):
@@ -53,79 +41,73 @@ class Simulacion():
 
 #Inicia simulación
     def comienzo(self):
-       contador = 0
-       for i in range(2):
-            contador += 1
-            #Cantidad de personas susceptibles
-            susceptibles = self.__comunidad.get_susceptible()
+        np.random.seed() 
+        caso_0 = self.__comunidad.get_habitantes()[0]
+        caso_0.set_estado("I")
 
-            #Cantidad de personas infectadas
-            infectados = self.__comunidad.get_num_infectados()
+        susceptibles = [self.__comunidad.get_num_ciudadanos() - self.__comunidad.get_vacunados() - 1]
+        infectados = [1]
+        recuperados = [self.__comunidad.get_vacunados()]
+        muertos = [0]
+        for _ in range(self.__pasos):
+            nuevo_i = 0
+            nuevo_r = 0
+            nuevo_f = 0
 
-            #Cantidad de personas recuperadas
-            recuperados = self.__comunidad.get_recuperados()
+            for persona in self.__comunidad.get_habitantes():
+                if persona.get_estado() == "I":
+                    if np.random.random() < 0.1:
+                        persona.set_estado("R")
+                        nuevo_r += 1
+                    else: 
+                        if np.random.random() < self.__enfermedad.get_muerte():
+                            self.__comunidad.get_habitantes().remove(persona)
+                            nuevo_f +=1
+                        else:
+                            for vecino in self.__comunidad.get_habitantes():
+                                if vecino.get_estado() == "S" and np.random.normal(self.__comunidad.get_enfermedad().get_infeccion_probable, self.__comunidad.get_enfermedad().get_infeccion_probable()/2) > 0:
+                                    vecino.set_estado("I")
+                                    nuevo_i += 1
 
-            #Capacidad de transmisión de la enfermedad
-            transmision = self.__enfermedad.get_infeccion_probable()
 
-            #Tasa de recuperación
-            recuperacion = 1
+            susceptibles.append(susceptibles[-1] - nuevo_i)
+            infectados.append(infectados[-1] + nuevo_i - nuevo_r - nuevo_f)
+            recuperados.append(recuperados[-1] + nuevo_r)
+            muertos.append(muertos[-1] + nuevo_f)
 
-            #Tasa de mortalidad
-            muerte = self.__enfermedad.get_muerte()
+            nuevo_i = 0
+            nuevo_r = 0
+            nuevo_f = 0
 
-            #Cantidad de muertos
-            muertos = self.__comunidad.get_muertos()
-
-            #Formulas del modelo SIR
-            susceptible = (transmision*susceptibles) - infectados
-            infectado = infectados + (transmision * susceptibles * infectados) - (recuperacion * infectados) -  (muerte * infectados)
-            print(infectado,transmision,susceptibles,infectados,recuperacion,muerte)
-            recuperado = recuperados + (recuperacion * infectados)
-            muerto = muertos + (muerte * infectados)
-
-            #Personas susceptibles
-            for i in range(self.__comunidad.get_num_ciudadanos()):
-                for _ in self.__comunidad.get_habitantes():
-                    if self.__comunidad.get_habitantes()[i-1].get_estado() == "S":
-                        self.__comunidad.set_num_susceptibles(1)
-
-            #Personas infectadas
-            for i in range(self.__comunidad.get_num_ciudadanos()):
-                for _ in self.__comunidad.get_habitantes():
-                    if self.__comunidad.get_habitantes()[i-1].get_estado() == "S":
-                        self.__comunidad.get_habitantes()[i-1].set_estado("I")
-                        self.__comunidad.set_num_infectados(1)
-                        self.__comunidad.set_num_susceptibles(-1)
-
+            if _ > 0:
                 
-            #Personas recuperadas
-            for i in range(self.__comunidad.get_num_ciudadanos()):
-                for _ in self.__comunidad.get_habitantes():
-                    if self.__comunidad.get_habitantes()[i-1].get_estado() == "I" and contador >=3:
-                        self.__comunidad.set_num_recuperados(1)
-                        self.__comunidad.set_num_susceptibles(-1)
-                        self.__comunidad.set_num_infectados(-1)
-                        self.__comunidad.get_habitantes()(i-1).set_estado("R")
+                for persona in self.__comunidad.get_habitantes():
+                    if persona.get_estado() == "I":
+                        
+                        # Obtener vecinos susceptibles
+                        vecinos_susceptibles = [vecino for vecino in self.__comunidad.get_habitantes() if vecino.get_estado() == "S"]
+                        
+                        # Determinar cuántos vecinos se infectarán
+                        num_vecinos_infectados = int(min(self.__comunidad.get_enfermedad().get_infeccion_probable(), len(vecinos_susceptibles)))
+                       
+                        # Elegir al azar los vecinos que serán infectados
+                        infectados_vecinos = random.sample(vecinos_susceptibles, num_vecinos_infectados)
+                        
+                        # Infectar a los vecinos seleccionados
+                        for vecino in infectados_vecinos:
+                            vecino.set_estado("I")
+                            nuevo_i += 1
+            infectados[-1] += nuevo_i
+            recuperados[-1] += nuevo_r
+            muertos[-1] += nuevo_f
 
-            #Personas muertas
-            for i in range(self.__comunidad.get_num_ciudadanos()):
-                for _ in self.__comunidad.get_habitantes():
-                    if self.__comunidad.get_habitantes()[i-1].get_estado() == "I" and self.__comunidad.get_habitantes()[i].get_vivencia() == True:
-                        self.__comunidad.get_habitantes()[i-1].set_estado("F")
-                        self.__comunidad.get_habitantes()[i-1].set_vivencia(False)
-                        self.__comunidad.set_num_infectados(-1)
-                        self.__comunidad.set_num_muertos(1)
-                
-            
 
-            print(f"Día: {contador}, poblacion: {self.__comunidad.get_num_ciudadanos()}, infectados: {infectado}, recuperados: {recuperado}, fallecidos: {muerto}")
-            susceptibles = 0
-            infectados = 0
-            recuperados = 0
-            muertos = 0
-            susceptible = 0
-            infectado = 0
-            recuperado = 0
-            muerto = 0
-        
+
+        data = {'Day': range(len(susceptibles)), 
+                    'Susceptible': susceptibles,
+                    'Infected': infectados,
+                    'Recovered': recuperados,
+                    'Deaths': muertos}
+        df = pd.DataFrame(data)
+        print(df)
+
